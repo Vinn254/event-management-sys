@@ -36,10 +36,7 @@ const Profile = () => {
 
   const fetchPaymentHistory = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get('/api/payments/history', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/payments/history');
       setPaymentHistory(response.data);
     } catch (err) {
       console.error('Failed to fetch payment history:', err);
@@ -67,14 +64,7 @@ const Profile = () => {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.put(
-        '/api/auth/profile',
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const response = await api.put('/api/auth/profile', formData);
       
       localStorage.setItem('user', JSON.stringify(response.data));
       setSuccess('Profile updated successfully!');
@@ -103,14 +93,7 @@ const Profile = () => {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('token');
-      await api.put(
-        '/api/auth/profile',
-        { password: passwordData.newPassword },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await api.put('/api/auth/profile', { password: passwordData.newPassword });
       
       setSuccess('Password changed successfully!');
       setPasswordData({

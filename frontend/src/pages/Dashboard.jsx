@@ -13,10 +13,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await api.get('/api/auth/tickets', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/api/auth/tickets');
         setTickets(response.data);
         setLoading(false);
       } catch (err) {

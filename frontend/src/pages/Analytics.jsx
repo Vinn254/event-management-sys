@@ -24,10 +24,7 @@ const Analytics = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get('/api/analytics/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/analytics/dashboard');
       setAnalytics(response.data);
       setLoading(false);
     } catch (err) {
