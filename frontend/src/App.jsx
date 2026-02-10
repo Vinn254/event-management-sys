@@ -10,6 +10,7 @@ import Organizer from './pages/Organizer';
 import Analytics from './pages/Analytics';
 import Payment from './pages/Payment';
 import Profile from './pages/Profile';
+import Tickets from './pages/Tickets';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, organizerOnly = false }) => {
@@ -116,6 +117,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Payment />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/tickets" 
+          element={
+            <ProtectedRoute>
+              <Tickets />
             </ProtectedRoute>
           } 
         />

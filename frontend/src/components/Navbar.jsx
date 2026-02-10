@@ -21,6 +21,7 @@ const Navbar = () => {
       allNavLinks.push({ path: '/analytics', label: 'Analytics' });
     }
     allNavLinks.push({ path: '/profile', label: 'Profile' });
+    allNavLinks.push({ path: '/tickets', label: 'My Tickets' });
   }
 
   return (
