@@ -37,7 +37,7 @@ const Profile = () => {
   const fetchPaymentHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await api.get('/payments/history', {
+      const response = await api.get('/api/payments/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPaymentHistory(response.data);
@@ -69,7 +69,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await api.put(
-        '/auth/profile',
+        '/api/auth/profile',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -105,7 +105,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('token');
       await api.put(
-        '/auth/profile',
+        '/api/auth/profile',
         { password: passwordData.newPassword },
         {
           headers: { Authorization: `Bearer ${token}` }

@@ -19,7 +19,7 @@ const Payment = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await api.get(`/events/${eventId}`);
+        const response = await api.get(`/api/events/${eventId}`);
         setEvent(response.data);
         setLoading(false);
       } catch (err) {
@@ -171,7 +171,7 @@ const Payment = () => {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  window.open(`https://event-management-sys-63du.onrender.com/payments/ticket/${ticket.ticketNumber}`, '_blank');
+                  window.open(`https://event-management-sys-63du.onrender.com/api/payments/ticket/${ticket.ticketNumber}`, '_blank');
                 }}
               >
                 Download Ticket

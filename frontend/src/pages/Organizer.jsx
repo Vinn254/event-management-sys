@@ -32,7 +32,7 @@ const Organizer = () => {
   const fetchMyEvents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await api.get('/events/my-events', {
+      const response = await api.get('/api/events/my-events', {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log('Fetched events:', response.data);
@@ -65,7 +65,7 @@ const Organizer = () => {
         const formDataUpload = new FormData();
         formDataUpload.append('image', file);
 
-        const response = await api.post('/upload', formDataUpload, {
+        const response = await api.post('/api/upload', formDataUpload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -97,11 +97,11 @@ const Organizer = () => {
       const token = localStorage.getItem('token');
       
       if (editingEvent) {
-        await api.put(`/events/${editingEvent._id}`, formData, {
+        await api.put(`/api/events/${editingEvent._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await api.post('/events', formData, {
+        await api.post('/api/events', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -153,7 +153,7 @@ const Organizer = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      await api.delete(`/events/${eventId}`, {
+      await api.delete(`/api/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchMyEvents();

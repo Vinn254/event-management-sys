@@ -14,7 +14,7 @@ const Dashboard = () => {
     const fetchTickets = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await api.get('/auth/tickets', {
+        const response = await api.get('/api/auth/tickets', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTickets(response.data);
@@ -137,7 +137,7 @@ const Dashboard = () => {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          window.open(`https://event-management-sys-63du.onrender.com/payments/ticket/${ticket.ticketNumber}`, '_blank');
+                          window.open(`https://event-management-sys-63du.onrender.com/api/payments/ticket/${ticket.ticketNumber}`, '_blank');
                         }}
                       >
                         Download

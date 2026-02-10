@@ -3,7 +3,7 @@ import api from '../api';
 
 const AuthContext = createContext();
 
-const API_URL = '/auth';
+const API_URL = '/api/auth';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
