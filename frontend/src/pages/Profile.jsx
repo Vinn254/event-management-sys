@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/Footer';
 
@@ -37,7 +37,7 @@ const Profile = () => {
   const fetchPaymentHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/payments/history', {
+      const response = await api.get('/payments/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPaymentHistory(response.data);
@@ -68,8 +68,8 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(
-        '/api/auth/profile',
+      const response = await api.put(
+        '/auth/profile',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -104,8 +104,8 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.put(
-        '/api/auth/profile',
+      await api.put(
+        '/auth/profile',
         { password: passwordData.newPassword },
         {
           headers: { Authorization: `Bearer ${token}` }

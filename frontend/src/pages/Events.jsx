@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import EventCard from '../components/EventCard';
 import Footer from '../components/Footer';
 
@@ -13,7 +13,7 @@ const Events = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('/api/events');
+        const response = await api.get('/events');
         setEvents(response.data);
         setLoading(false);
       } catch (err) {

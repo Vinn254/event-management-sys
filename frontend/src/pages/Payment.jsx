@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import Footer from '../components/Footer';
 
 const Payment = () => {
@@ -19,7 +19,7 @@ const Payment = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`/api/events/${eventId}`);
+        const response = await api.get(`/events/${eventId}`);
         setEvent(response.data);
         setLoading(false);
       } catch (err) {
@@ -171,7 +171,7 @@ const Payment = () => {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  window.open(`/api/payments/ticket/${ticket.ticketNumber}`, '_blank');
+                  window.open(`https://event-management-sys-63du.onrender.com/payments/ticket/${ticket.ticketNumber}`, '_blank');
                 }}
               >
                 Download Ticket

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import Footer from '../components/Footer';
 
 const Organizer = () => {
@@ -32,7 +32,7 @@ const Organizer = () => {
   const fetchMyEvents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/events/my-events', {
+      const response = await api.get('/events/my-events', {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log('Fetched events:', response.data);
@@ -65,7 +65,7 @@ const Organizer = () => {
         const formDataUpload = new FormData();
         formDataUpload.append('image', file);
 
-        const response = await axios.post('/api/upload', formDataUpload, {
+        const response = await api.post('/upload', formDataUpload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -97,11 +97,11 @@ const Organizer = () => {
       const token = localStorage.getItem('token');
       
       if (editingEvent) {
-        await axios.put(`/api/events/${editingEvent._id}`, formData, {
+        await api.put(`/events/${editingEvent._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('/api/events', formData, {
+        await api.post('/events', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -153,7 +153,7 @@ const Organizer = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/events/${eventId}`, {
+      await api.delete(`/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchMyEvents();

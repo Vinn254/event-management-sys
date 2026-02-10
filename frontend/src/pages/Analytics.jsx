@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import {
   PieChart,
   Pie,
@@ -25,7 +25,7 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/analytics/dashboard', {
+      const response = await api.get('/analytics/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAnalytics(response.data);

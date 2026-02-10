@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/Footer';
 
@@ -14,7 +14,7 @@ const Dashboard = () => {
     const fetchTickets = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/auth/tickets', {
+        const response = await api.get('/auth/tickets', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTickets(response.data);
@@ -137,7 +137,7 @@ const Dashboard = () => {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          window.open(`/api/payments/ticket/${ticket.ticketNumber}`, '_blank');
+                          window.open(`https://event-management-sys-63du.onrender.com/payments/ticket/${ticket.ticketNumber}`, '_blank');
                         }}
                       >
                         Download
