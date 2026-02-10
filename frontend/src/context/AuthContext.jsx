@@ -10,28 +10,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem('token');
-      const userInfo = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    const userInfo = localStorage.getItem('user');
 
-      if (token && userInfo) {
-        try {
-          // Verify token with backend
-          const response = await api.get(`${API_URL}/profile`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(response.data);
-        } catch (error) {
-          // Token is invalid or expired, clear storage
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-        }
-      }
-      setLoading(false);
-    };
-
-    verifyToken();
+    if (token && userInfo) {
+      setUser(JSON.parse(userInfo));
+    }
+    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
