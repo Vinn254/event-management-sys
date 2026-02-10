@@ -51,8 +51,8 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email and include password
+    const user = await User.findOne({ email }).select('+password');
 
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
@@ -95,7 +95,7 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
 
     if (user) {
       user.name = req.body.name || user.name;
