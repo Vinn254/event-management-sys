@@ -12,7 +12,8 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://events-management-sysz.netlify.app'
+  'https://events-management-sysz.netlify.app',
+  'https://event-management-sys-63du.onrender.com'
 ];
 
 app.use(cors({
@@ -31,6 +32,10 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve static files from frontend build in production
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDistPath));
 
 // Configure Cloudinary
 const cloudinary = require('cloudinary').v2;
@@ -354,6 +359,12 @@ const startServer = async () => {
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
     }
+  });
+
+  // SPA fallback - serve index.html for all non-API routes
+  const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
 
   app.listen(PORT, () => {
