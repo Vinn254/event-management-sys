@@ -12,8 +12,7 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://events-management-systemz.netlify.app',
-  'https://events-management-systemz.netlify.app'
+  'https://events-management-sysz.netlify.app'
 ];
 
 app.use(cors({
@@ -21,6 +20,10 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow any netlify.app domain for flexibility
+    if (origin && origin.includes('.netlify.app')) {
       return callback(null, true);
     }
     return callback(null, false);
