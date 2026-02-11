@@ -32,13 +32,18 @@ const Analytics = () => {
       setLoading(false);
     } catch (err) {
       console.error('Analytics error:', err);
-      // Check if auth error - clear token and redirect
+      
       if (err.response?.status === 401) {
         logout();
         navigate('/login?reason=session_expired');
         return;
       }
-      setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
+      
+      if (err.response?.status === 403) {
+        setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
+      } else {
+        setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
+      }
       setLoading(false);
     }
   };
