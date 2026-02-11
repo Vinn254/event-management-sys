@@ -10,13 +10,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('user');
+    const initAuth = async () => {
+      const token = localStorage.getItem('token');
+      const userInfo = localStorage.getItem('user');
 
-    if (token && userInfo) {
-      setUser(JSON.parse(userInfo));
-    }
-    setLoading(false);
+      if (token && userInfo) {
+        try {
+          // Verify token is still valid by fetching profile
+          const response = await api.get(`${API_URL}/profile`);
+          setUser(response.data);
+        } catch (error) {
+          // Token is invalid (mock database reset, server restart, etc.)
+          console.log('Auth init failed, clearing invalid auth data');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {

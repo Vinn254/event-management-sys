@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -9,6 +9,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  const sessionExpired = searchParams.get('reason') === 'session_expired';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +33,12 @@ const Login = () => {
     <div className="container">
       <div className="form-container">
         <h2>Welcome Back</h2>
+        
+        {sessionExpired && (
+          <div className="alert alert-warning">
+            Your session has expired. Please login again.
+          </div>
+        )}
         
         {error && <div className="alert alert-error">{error}</div>}
         

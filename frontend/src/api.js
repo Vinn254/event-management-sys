@@ -20,4 +20,26 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const errorCode = error.response?.data?.code;
+      
+      // Clear invalid token if session expired or user not found
+      if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED' || error.response?.data?.message?.includes('not found')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Redirect to login if not already there
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login?reason=session_expired';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
