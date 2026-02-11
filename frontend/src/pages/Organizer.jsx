@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 
 const Organizer = () => {
   const [events, setEvents] = useState([]);
@@ -23,6 +24,7 @@ const Organizer = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +39,12 @@ const Organizer = () => {
       setLoading(false);
     } catch (err) {
       console.error('Error fetching events:', err);
+      // Check if auth error - clear token and redirect
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login?reason=session_expired');
+        return;
+      }
       setError('Failed to load your events: ' + (err.response?.data?.message || err.message));
       setLoading(false);
     }

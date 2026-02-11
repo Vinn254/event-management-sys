@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import {
   PieChart,
@@ -10,6 +10,7 @@ import {
   Legend
 } from 'recharts';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 
 const COLORS = ['#6366f1', '#14b8a6', '#f97316', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
 
@@ -17,6 +18,8 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAnalytics();
@@ -28,7 +31,14 @@ const Analytics = () => {
       setAnalytics(response.data);
       setLoading(false);
     } catch (err) {
-      setError('Failed to load analytics');
+      console.error('Analytics error:', err);
+      // Check if auth error - clear token and redirect
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login?reason=session_expired');
+        return;
+      }
+      setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
       setLoading(false);
     }
   };

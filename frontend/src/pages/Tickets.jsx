@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 
 const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -15,6 +18,13 @@ const Tickets = () => {
         setTickets(response.data);
         setLoading(false);
       } catch (err) {
+        console.error('Tickets error:', err);
+        // Check if auth error - clear token and redirect
+        if (err.response?.status === 401) {
+          logout();
+          navigate('/login?reason=session_expired');
+          return;
+        }
         setError(err.response?.data?.message || 'Failed to load tickets');
         setLoading(false);
       }
