@@ -7,6 +7,7 @@ const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -15,7 +16,12 @@ const Tickets = () => {
         setTickets(response.data);
       } catch (err) {
         console.error('Tickets error:', err);
-        setError(err.response?.data?.message || 'Failed to load tickets');
+        if (err.response?.status === 401) {
+          setIsAuthenticated(false);
+          setError('Please log in to view your tickets');
+        } else {
+          setError(err.response?.data?.message || 'Failed to load tickets');
+        }
       } finally {
         setLoading(false);
       }
@@ -73,9 +79,16 @@ const Tickets = () => {
     return (
       <div className="container">
         <div className="alert alert-error">{error}</div>
-        <Link to="/events" className="btn btn-primary">
-          Browse Events
-        </Link>
+        {!isAuthenticated && (
+          <Link to="/login" className="btn btn-primary">
+            Log In
+          </Link>
+        )}
+        {isAuthenticated && (
+          <Link to="/events" className="btn btn-primary">
+            Browse Events
+          </Link>
+        )}
       </div>
     );
   }

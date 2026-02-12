@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import {
   PieChart,
@@ -16,6 +17,7 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -25,7 +27,10 @@ const Analytics = () => {
       } catch (err) {
         console.error('Analytics error:', err);
 
-        if (err.response?.status === 403) {
+        if (err.response?.status === 401) {
+          setIsAuthenticated(false);
+          setError('Please log in to view analytics');
+        } else if (err.response?.status === 403) {
           setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
         } else {
           setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
@@ -68,6 +73,11 @@ const Analytics = () => {
     return (
       <div className="container">
         <div className="alert alert-error">{error}</div>
+        {!isAuthenticated && (
+          <Link to="/login" className="btn btn-primary">
+            Log In
+          </Link>
+        )}
       </div>
     );
   }
