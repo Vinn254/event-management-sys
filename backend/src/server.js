@@ -49,14 +49,15 @@ cloudinary.config({
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Import database connection
-const { connectDB, generateToken, jwt, bcrypt, getMockStorage, User: UserModel } = require('./config/db');
+const { connectDB, generateToken, jwt, bcrypt, getMockStorage, User: UserModel, useMongoDB, useFirebase } = require('./config/db');
 const { v4: uuidv4 } = require('uuid');
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Event Management API is running'
+    message: 'Event Management API is running',
+    database: useMongoDB() ? 'MongoDB Atlas' : (useFirebase() ? 'Firebase' : 'Mock (no database)')
   });
 });
 
