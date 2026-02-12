@@ -1,34 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import Footer from '../components/Footer';
-import { useAuth } from '../context/AuthContext';
 
 const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { logout, getToken } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTickets = async () => {
-      const token = getToken?.();
-      if (!token) {
-        navigate('/login?reason=session_expired');
-        return;
-      }
-
       try {
         const response = await api.get('/api/auth/tickets');
         setTickets(response.data);
       } catch (err) {
         console.error('Tickets error:', err);
-        if (err.response?.status === 401) {
-          logout();
-          navigate('/login?reason=session_expired');
-          return;
-        }
         setError(err.response?.data?.message || 'Failed to load tickets');
       } finally {
         setLoading(false);
@@ -36,7 +22,7 @@ const Tickets = () => {
     };
 
     fetchTickets();
-  }, [getToken, logout, navigate]);
+  }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -69,12 +55,7 @@ const Tickets = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download ticket failed', err);
-      if (err.response?.status === 401) {
-        logout();
-        navigate('/login?reason=session_expired');
-      } else {
-        alert('Failed to download ticket. Please try again.');
-      }
+      alert('Failed to download ticket. Please try again.');
     }
   };
 

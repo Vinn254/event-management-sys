@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import {
   PieChart,
@@ -10,7 +9,6 @@ import {
   Legend
 } from 'recharts';
 import Footer from '../components/Footer';
-import { useAuth } from '../context/AuthContext';
 
 const COLORS = ['#6366f1', '#14b8a6', '#f97316', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
 
@@ -18,29 +16,14 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { logout, getToken } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      // If there's no token, redirect to login instead of making a request that will 401
-      const token = getToken?.();
-      if (!token) {
-        navigate('/login?reason=session_expired');
-        return;
-      }
-
       try {
         const response = await api.get('/api/analytics/dashboard');
         setAnalytics(response.data);
       } catch (err) {
         console.error('Analytics error:', err);
-
-        if (err.response?.status === 401) {
-          logout();
-          navigate('/login?reason=session_expired');
-          return;
-        }
 
         if (err.response?.status === 403) {
           setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
@@ -53,7 +36,7 @@ const Analytics = () => {
     };
 
     fetchAnalytics();
-  }, [getToken, logout, navigate]);
+  }, []);
 
   const currencyFormatter = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
   const formatCurrency = (value) => {
