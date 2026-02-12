@@ -8,30 +8,35 @@ const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { logout } = useAuth();
+  const { logout, getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTickets = async () => {
+      const token = getToken?.();
+      if (!token) {
+        navigate('/login?reason=session_expired');
+        return;
+      }
+
       try {
         const response = await api.get('/api/auth/tickets');
         setTickets(response.data);
-        setLoading(false);
       } catch (err) {
         console.error('Tickets error:', err);
-        // Check if auth error - clear token and redirect
         if (err.response?.status === 401) {
           logout();
           navigate('/login?reason=session_expired');
           return;
         }
         setError(err.response?.data?.message || 'Failed to load tickets');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchTickets();
-  }, []);
+  }, [getToken, logout, navigate]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -41,6 +46,36 @@ const Tickets = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const currencyFormatter = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
+
+  const formatCurrency = (value) => {
+    const amount = Number(value) || 0;
+    return currencyFormatter.format(amount);
+  };
+
+  const downloadTicket = async (ticketNumber) => {
+    try {
+      const resp = await api.get(`/api/payments/ticket/${ticketNumber}`, { responseType: 'blob' });
+      const blob = new Blob([resp.data], { type: resp.headers['content-type'] || 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ticket-${ticketNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download ticket failed', err);
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login?reason=session_expired');
+      } else {
+        alert('Failed to download ticket. Please try again.');
+      }
+    }
   };
 
   if (loading) {
@@ -79,7 +114,7 @@ const Tickets = () => {
         ) : (
           <div className="tickets-grid">
             {tickets.map((ticket, index) => (
-              <div key={index} className="ticket-card">
+              <div key={ticket.id || ticket.ticketNumber || index} className="ticket-card">
                 <div className="ticket-header">
                   <span className="ticket-number">{ticket.ticketNumber}</span>
                   <span className="ticket-status">{ticket.status || 'confirmed'}</span>
@@ -90,13 +125,13 @@ const Tickets = () => {
                   <p><strong>Time:</strong> {ticket.eventTime || 'N/A'}</p>
                   <p><strong>Location:</strong> {ticket.eventLocation || 'N/A'}</p>
                   <p><strong>Quantity:</strong> {ticket.quantity}</p>
-                  <p><strong>Total Paid:</strong> KES {ticket.totalAmount?.toLocaleString() || '0'}</p>
+                  <p><strong>Total Paid:</strong> {formatCurrency(ticket.totalAmount)}</p>
                   <p><strong>Receipt #:</strong> {ticket.receiptNumber}</p>
                 </div>
                 <div className="ticket-footer">
                   <button
                     className="btn btn-secondary"
-                    onClick={() => window.open(`https://event-management-sys-63du.onrender.com/api/payments/ticket/${ticket.ticketNumber}`, '_blank')}
+                    onClick={() => downloadTicket(ticket.ticketNumber)}
                   >
                     Download Ticket
                   </button>

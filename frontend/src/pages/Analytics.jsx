@@ -18,42 +18,53 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { logout } = useAuth();
+  const { logout, getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      const response = await api.get('/api/analytics/dashboard');
-      setAnalytics(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Analytics error:', err);
-      
-      if (err.response?.status === 401) {
-        logout();
+    const fetchAnalytics = async () => {
+      // If there's no token, redirect to login instead of making a request that will 401
+      const token = getToken?.();
+      if (!token) {
         navigate('/login?reason=session_expired');
         return;
       }
-      
-      if (err.response?.status === 403) {
-        setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
-      } else {
-        setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
-      }
-      setLoading(false);
-    }
-  };
 
+      try {
+        const response = await api.get('/api/analytics/dashboard');
+        setAnalytics(response.data);
+      } catch (err) {
+        console.error('Analytics error:', err);
+
+        if (err.response?.status === 401) {
+          logout();
+          navigate('/login?reason=session_expired');
+          return;
+        }
+
+        if (err.response?.status === 403) {
+          setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
+        } else {
+          setError('Failed to load analytics: ' + (err.response?.data?.message || err.message));
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [getToken, logout, navigate]);
+
+  const currencyFormatter = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
   const formatCurrency = (value) => {
-    return `KES ${value.toLocaleString()}`;
+    const amount = Number(value) || 0;
+    return currencyFormatter.format(amount);
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '—';
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '—';
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
@@ -130,17 +141,17 @@ const Analytics = () => {
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label={({ eventTitle, percent }) => `${(percent * 100).toFixed(0)}%`}
+                label={(entry) => `${(entry.percent * 100).toFixed(0)}%`}
                 labelLine={false}
               >
                 {(analytics.revenueByEvent || []).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={entry.id || entry.eventId || `cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [
-                `${formatCurrency(value)} (${props.payload.attendees || 0} tickets)`,
-                props.payload.eventTitle
-              ]} />
+              <Tooltip formatter={(value, name, props) => {
+                const payload = props?.payload || {};
+                return [`${formatCurrency(value)} (${payload.attendees || 0} tickets)`, payload.eventTitle || name];
+              }} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -158,17 +169,17 @@ const Analytics = () => {
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label={({ month, percent }) => `${month}: ${(percent * 100).toFixed(0)}%`}
+                label={(entry) => `${entry.payload?.month || entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
                 labelLine={false}
               >
                 {(analytics.ticketsSoldOverTime || []).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={entry.id || entry.month || `cell-month-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [
-                `${value} tickets (${formatCurrency(props.payload.revenue)})`,
-                props.payload.month
-              ]} />
+              <Tooltip formatter={(value, name, props) => {
+                const payload = props?.payload || {};
+                return [`${value} tickets (${formatCurrency(payload.revenue)})`, payload.month || name];
+              }} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -197,7 +208,7 @@ const Analytics = () => {
               </thead>
               <tbody>
                 {analytics.recentTransactions && analytics.recentTransactions.map((transaction, index) => (
-                  <tr key={index}>
+                  <tr key={transaction.id || transaction.ticketNumber || index}>
                     <td><code style={{ background: 'var(--light)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.875rem' }}>{transaction.ticketNumber}</code></td>
                     <td>{transaction.eventTitle}</td>
                     <td>{transaction.quantity}</td>
