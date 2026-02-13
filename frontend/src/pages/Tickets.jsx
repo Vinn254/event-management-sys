@@ -13,10 +13,17 @@ const Tickets = () => {
     const fetchTickets = async () => {
       try {
         const response = await api.get('/api/auth/tickets');
-        setTickets(response.data);
+        setTickets(response.data || []);
       } catch (err) {
         console.error('Tickets error:', err);
-        if (err.response?.status === 401) {
+        
+        const errorCode = err.response?.data?.code;
+        
+        // Check for token-related errors (mock database reset, expired token)
+        if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED') {
+          // Mock database reset - keep user logged in with cached data
+          setError('Your tickets are temporarily unavailable. Please refresh the page or log out and log back in.');
+        } else if (err.response?.status === 401) {
           setIsAuthenticated(false);
           setError('Please log in to view your tickets');
         } else {
@@ -79,16 +86,14 @@ const Tickets = () => {
     return (
       <div className="container">
         <div className="alert alert-error">{error}</div>
-        {!isAuthenticated && (
-          <Link to="/login" className="btn btn-primary">
-            Log In
-          </Link>
-        )}
-        {isAuthenticated && (
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+          <button onClick={() => window.location.reload()} className="btn btn-secondary">
+            Refresh Page
+          </button>
           <Link to="/events" className="btn btn-primary">
             Browse Events
           </Link>
-        )}
+        </div>
       </div>
     );
   }

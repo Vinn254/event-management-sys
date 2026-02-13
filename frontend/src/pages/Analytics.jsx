@@ -26,8 +26,15 @@ const Analytics = () => {
         setAnalytics(response.data);
       } catch (err) {
         console.error('Analytics error:', err);
-
-        if (err.response?.status === 401) {
+        
+        const errorCode = err.response?.data?.code;
+        const errorMessage = err.response?.data?.message || '';
+        
+        // Check for token-related errors (mock database reset, expired token)
+        if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED') {
+          // Mock database reset - keep user logged in with cached data
+          setError('Analytics data is temporarily unavailable. Please refresh the page or log out and log back in.');
+        } else if (err.response?.status === 401) {
           setIsAuthenticated(false);
           setError('Please log in to view analytics');
         } else if (err.response?.status === 403) {
@@ -73,11 +80,14 @@ const Analytics = () => {
     return (
       <div className="container">
         <div className="alert alert-error">{error}</div>
-        {!isAuthenticated && (
-          <Link to="/login" className="btn btn-primary">
-            Log In
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+          <button onClick={() => window.location.reload()} className="btn btn-secondary">
+            Refresh Page
+          </button>
+          <Link to="/dashboard" className="btn btn-primary">
+            Go to Dashboard
           </Link>
-        )}
+        </div>
       </div>
     );
   }
