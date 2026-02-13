@@ -26,9 +26,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const errorCode = error.response?.data?.code;
+      const errorMessage = error.response?.data?.message || '';
       
-      // Clear invalid token if session expired or user not found
-      if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED' || error.response?.data?.message?.includes('not found')) {
+      // Only clear tokens and redirect if it's specifically an invalid/expired token
+      // Don't clear tokens for general "not authorized" errors to avoid aggressive logout
+      if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         
@@ -37,6 +39,8 @@ api.interceptors.response.use(
           window.location.href = '/login?reason=session_expired';
         }
       }
+      // For other 401 errors (user not found, etc.), don't auto-logout
+      // The user will be prompted to login again when they try to access protected resources
     }
     return Promise.reject(error);
   }

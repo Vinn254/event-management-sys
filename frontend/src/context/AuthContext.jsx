@@ -19,11 +19,25 @@ export const AuthProvider = ({ children }) => {
           // Verify token is still valid by fetching profile
           const response = await api.get(`${API_URL}/profile`);
           setUser(response.data);
+          // Update stored user data with fresh data
+          localStorage.setItem('user', JSON.stringify(response.data));
         } catch (error) {
-          // Token is invalid (mock database reset, server restart, etc.)
-          console.log('Auth init failed, clearing invalid auth data');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          // Token verification failed - this could be:
+          // 1. Server restarted (mock database reset)
+          // 2. Token expired
+          // 3. User was deleted
+          // Don't auto-logout - keep the user logged in with cached data
+          // The token will be refreshed on next API call that requires auth
+          console.log('Auth verification failed, keeping cached session');
+          // Set user from cached data if available
+          try {
+            const cachedUser = JSON.parse(userInfo);
+            setUser(cachedUser);
+          } catch (e) {
+            // Cached user data is invalid, clear everything
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
         }
       }
       setLoading(false);
