@@ -38,10 +38,11 @@ const Analytics = () => {
         
         // Check for token-related errors (mock database reset, expired token)
         if (errorCode === 'TOKEN_INVALID' || errorCode === 'INVALID_TOKEN' || errorCode === 'TOKEN_EXPIRED') {
-          // Mock database reset - keep user logged in with cached data
-          setError('Analytics data is temporarily unavailable. Please refresh the page or log out and log back in.');
+          // Mock database reset - show demo data
+          showDemoAnalytics();
         } else if (err.response?.status === 401) {
-          setError('Please log in to view analytics');
+          // 401 error - show demo data (mock database reset)
+          showDemoAnalytics();
         } else if (err.response?.status === 403) {
           setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
         } else {
@@ -54,6 +55,26 @@ const Analytics = () => {
 
     fetchAnalytics();
   }, []);
+
+  const showDemoAnalytics = () => {
+    // Show demo/sample analytics data
+    setAnalytics({
+      totalEvents: 3,
+      totalAttendees: 0,
+      totalRevenue: 0,
+      revenueByEvent: [
+        { eventTitle: 'Tech Conference 2024', revenue: 0, attendees: 0, price: 1500 },
+        { eventTitle: 'Summer Music Festival', revenue: 0, attendees: 0, price: 2000 },
+        { eventTitle: 'Business Workshop', revenue: 0, attendees: 0, price: 500 }
+      ],
+      ticketsSoldOverTime: [],
+      recentTransactions: [],
+      isDemo: true
+    });
+    setIsDemo(true);
+    setDemoMessage('Sample analytics. Create events to see real data.');
+    setLoading(false);
+  };
 
   const currencyFormatter = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
   const formatCurrency = (value) => {
