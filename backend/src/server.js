@@ -160,7 +160,47 @@ const startServer = async () => {
   app.get('/api/auth/tickets', verifyToken, async (req, res) => {
     try {
       const user = await User.findById(req.user._id);
-      res.json(user?.tickets || []);
+      const userTickets = user?.tickets || [];
+      
+      // If user has no tickets, return sample tickets
+      if (userTickets.length === 0) {
+        const sampleTickets = [
+          {
+            id: 'sample-1',
+            ticketNumber: 'SAMPLE-TKT-001',
+            eventTitle: 'Tech Conference 2024',
+            eventDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            eventTime: '09:00',
+            eventLocation: 'Nairobi Convention Center',
+            quantity: 2,
+            totalAmount: 3000,
+            receiptNumber: 'SAMPLE-RCPT-001',
+            status: 'confirmed',
+            isSample: true
+          },
+          {
+            id: 'sample-2',
+            ticketNumber: 'SAMPLE-TKT-002',
+            eventTitle: 'Summer Music Festival',
+            eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            eventTime: '16:00',
+            eventLocation: 'Kasarani Stadium',
+            quantity: 4,
+            totalAmount: 8000,
+            receiptNumber: 'SAMPLE-RCPT-002',
+            status: 'confirmed',
+            isSample: true
+          }
+        ];
+        
+        return res.json({
+          tickets: sampleTickets,
+          isSample: true,
+          message: 'Sample tickets. Purchase real tickets to see your actual bookings.'
+        });
+      }
+      
+      res.json(userTickets);
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
     }
@@ -333,12 +373,58 @@ const startServer = async () => {
   // Analytics Routes
   app.get('/api/analytics/dashboard', verifyToken, async (req, res) => {
     try {
-      const events = await Event.find({ organizer: req.user._id });
+      // Get user's events
+      const userEvents = await Event.find({ organizer: req.user._id });
 
-      const totalEvents = events.length;
+      // If user has no events, show demo/sample events
+      if (userEvents.length === 0) {
+        const demoEvents = await Event.find({ organizer: 'demo-organizer' });
+        
+        if (demoEvents.length > 0) {
+          // Return demo events as sample data
+          const totalEvents = demoEvents.length;
+          let totalAttendees = 0;
+          let totalRevenue = 0;
+          const revenueByEvent = demoEvents.map(e => {
+            const revenue = e.attendees.reduce((sum, a) => sum + a.totalAmount, 0);
+            const attendees = e.attendees.reduce((sum, a) => sum + a.quantity, 0);
+            totalAttendees += attendees;
+            totalRevenue += revenue;
+            return { eventTitle: e.title, revenue, attendees, price: e.price || 0, isDemo: true };
+          });
+
+          const recentTransactions = [];
+          demoEvents.forEach(e => {
+            e.attendees.forEach(a => {
+              recentTransactions.push({
+                ticketNumber: a.ticketNumber,
+                eventTitle: e.title,
+                quantity: a.quantity,
+                amount: a.totalAmount,
+                purchaseDate: a.purchaseDate,
+                receiptNumber: a.receiptNumber
+              });
+            });
+          });
+
+          return res.json({
+            totalEvents,
+            totalAttendees,
+            totalRevenue,
+            revenueByEvent,
+            ticketsSoldOverTime: [],
+            recentTransactions: recentTransactions.slice(0, 10),
+            isDemo: true,
+            message: 'Sample analytics from demo events. Create your own events to see your analytics.'
+          });
+        }
+      }
+
+      // User has events - show their analytics
+      const totalEvents = userEvents.length;
       let totalAttendees = 0;
       let totalRevenue = 0;
-      const revenueByEvent = events.map(e => {
+      const revenueByEvent = userEvents.map(e => {
         const revenue = e.attendees.reduce((sum, a) => sum + a.totalAmount, 0);
         const attendees = e.attendees.reduce((sum, a) => sum + a.quantity, 0);
         totalAttendees += attendees;
@@ -347,7 +433,7 @@ const startServer = async () => {
       });
 
       const recentTransactions = [];
-      events.forEach(e => {
+      userEvents.forEach(e => {
         e.attendees.forEach(a => {
           recentTransactions.push({
             ticketNumber: a.ticketNumber,

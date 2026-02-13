@@ -7,13 +7,25 @@ const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isSample, setIsSample] = useState(false);
+  const [sampleMessage, setSampleMessage] = useState('');
 
   useEffect(() => {
     const fetchTickets = async () => {
       try {
         const response = await api.get('/api/auth/tickets');
-        setTickets(response.data || []);
+        // Handle new response format with isSample flag
+        if (Array.isArray(response.data)) {
+          setTickets(response.data);
+        } else if (response.data.tickets) {
+          setTickets(response.data.tickets);
+          if (response.data.isSample) {
+            setIsSample(true);
+            setSampleMessage(response.data.message || '');
+          }
+        } else {
+          setTickets([]);
+        }
       } catch (err) {
         console.error('Tickets error:', err);
         
@@ -24,7 +36,6 @@ const Tickets = () => {
           // Mock database reset - keep user logged in with cached data
           setError('Your tickets are temporarily unavailable. Please refresh the page or log out and log back in.');
         } else if (err.response?.status === 401) {
-          setIsAuthenticated(false);
           setError('Please log in to view your tickets');
         } else {
           setError(err.response?.data?.message || 'Failed to load tickets');
@@ -103,6 +114,12 @@ const Tickets = () => {
       <div className="container">
         <h1>My Tickets</h1>
         
+        {isSample && sampleMessage && (
+          <div className="alert alert-info" style={{ marginBottom: '1rem' }}>
+            {sampleMessage}
+          </div>
+        )}
+        
         {tickets.length === 0 ? (
           <div className="empty-state">
             <p>You don't have any tickets yet.</p>
@@ -117,6 +134,7 @@ const Tickets = () => {
                 <div className="ticket-header">
                   <span className="ticket-number">{ticket.ticketNumber}</span>
                   <span className="ticket-status">{ticket.status || 'confirmed'}</span>
+                  {ticket.isSample && <span className="badge badge-info" style={{ marginLeft: '0.5rem' }}>Sample</span>}
                 </div>
                 <div className="ticket-body">
                   <h3>{ticket.eventTitle || 'Event'}</h3>
@@ -131,8 +149,10 @@ const Tickets = () => {
                   <button
                     className="btn btn-secondary"
                     onClick={() => downloadTicket(ticket.ticketNumber)}
+                    disabled={ticket.isSample}
+                    title={ticket.isSample ? 'Sample tickets cannot be downloaded' : ''}
                   >
-                    Download Ticket
+                    {ticket.isSample ? 'Sample Only' : 'Download Ticket'}
                   </button>
                 </div>
               </div>

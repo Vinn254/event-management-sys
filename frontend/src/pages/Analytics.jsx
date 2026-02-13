@@ -17,13 +17,19 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
+  const [demoMessage, setDemoMessage] = useState('');
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         const response = await api.get('/api/analytics/dashboard');
         setAnalytics(response.data);
+        // Check if response is demo data
+        if (response.data.isDemo) {
+          setIsDemo(true);
+          setDemoMessage(response.data.message || '');
+        }
       } catch (err) {
         console.error('Analytics error:', err);
         
@@ -35,7 +41,6 @@ const Analytics = () => {
           // Mock database reset - keep user logged in with cached data
           setError('Analytics data is temporarily unavailable. Please refresh the page or log out and log back in.');
         } else if (err.response?.status === 401) {
-          setIsAuthenticated(false);
           setError('Please log in to view analytics');
         } else if (err.response?.status === 403) {
           setError('You need organizer permissions to view analytics. Please register as an organizer or contact support.');
@@ -107,6 +112,13 @@ const Analytics = () => {
           <h1>Analytics Dashboard</h1>
           <p>Track your event performance and insights</p>
         </div>
+
+        {/* Demo Banner */}
+        {isDemo && demoMessage && (
+          <div className="alert alert-info" style={{ marginBottom: '1rem' }}>
+            {demoMessage}
+          </div>
+        )}
 
         {/* Key Metrics */}
         <div className="analytics-grid">
