@@ -64,7 +64,18 @@ app.get('/api/health', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
+  console.log('Connecting to database...');
   const { User, Event } = await connectDB();
+  console.log('Database connected successfully');
+  
+  // Log which database we're using
+  if (useMongoDB()) {
+    console.log('📦 Using MongoDB Atlas database');
+  } else if (useFirebase()) {
+    console.log('📦 Using Firebase database');
+  } else {
+    console.log('📦 Using Mock database (data will reset on server restart)');
+  }
 
   // Middleware to verify token
   const verifyToken = (req, res, next) => {

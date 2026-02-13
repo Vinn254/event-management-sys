@@ -170,6 +170,7 @@ const connectDB = async () => {
       return { User, Event, useMongoDB: true };
     } catch (error) {
       console.log('MongoDB connection failed:', error.message);
+      console.log('Falling back to mock database...');
       useMongoDB = false;
     }
   }
